@@ -26,7 +26,6 @@ func New(
 	ctx context.Context,
 	exchangeCfg config.Exchange,
 	pairQueries map[string][]chan *models.RecentTrade,
-	msgQuery chan string,
 	storageQuery chan *models.RecentTrade,
 
 ) (*RecentTradePuller, error) {

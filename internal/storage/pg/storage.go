@@ -85,7 +85,6 @@ func (s *Storage) RecentTradesSaver() {
 			if batch.Len() == 0 {
 				continue
 			}
-
 			br := s.conn.SendBatch(s.ctx, batch)
 			_, err := br.Exec()
 			if err != nil {
@@ -95,17 +94,28 @@ func (s *Storage) RecentTradesSaver() {
 			}
 			br.Close()
 			batch = &pgx.Batch{}
-		case rt := <-s.rtQuery:
-			// put to the batch
-			batch.Queue(
-				queries.InsertRecentTradeQuery,
-				rt.Tid,
-				rt.Pair,
-				rt.Price,
-				rt.Amount,
-				rt.Side,
-				rt.Timestamp,
-			)
+
+		default:
+		fillBatchLoop:
+			for {
+				select {
+				default:
+					break fillBatchLoop
+
+				case rt := <-s.rtQuery:
+					// put to the batch
+					batch.Queue(
+						queries.InsertRecentTradeQuery,
+						rt.Tid,
+						rt.Pair,
+						rt.Price,
+						rt.Amount,
+						rt.Side,
+						rt.Timestamp,
+					)
+				}
+			}
+
 		}
 	}
 }

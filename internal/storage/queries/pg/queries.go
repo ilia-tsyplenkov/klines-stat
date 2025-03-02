@@ -7,7 +7,7 @@ const (
     `
 
 	InsertRecentTradeQuery = `
-    INSERT INTO trades.recent_trade (tid, pair, price, amount, side, ts)
+    INSERT INTO trades.recent_trades (tid, pair, price, amount, side, ts)
     VALUES ($1, $2, $3, $4, $5, $6)
     `
 )

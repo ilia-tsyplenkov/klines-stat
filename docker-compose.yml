@@ -1,6 +1,15 @@
 version: '3'
 
 services:
+  app:
+    build:
+      context: .
+      dockerfile: .docker/server.Dockerfile
+    container_name: kline-stat
+    depends_on:
+      db:
+        condition: service_healthy
+
   migrations:
     image: flyway/flyway
     container_name: db_migrations

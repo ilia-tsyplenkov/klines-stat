@@ -18,11 +18,25 @@ type Storage struct {
 	rtQuery    chan *models.RecentTrade
 }
 
+func New(
+	ctx context.Context,
+	conn *pgxpool.Pool,
+	klineCh chan *models.Kline,
+	rtCh chan *models.RecentTrade,
+) *Storage {
+	return &Storage{
+		ctx:        ctx,
+		conn:       conn,
+		klineQuery: klineCh,
+		rtQuery:    rtCh,
+	}
+}
+
 func (s *Storage) KLinesSaver() {
 
 	batch := &pgx.Batch{}
 
-	for tick := time.Tick(5 * time.Second); ; {
+	for tick := time.Tick(100 * time.Millisecond); ; {
 		select {
 		case <-s.ctx.Done():
 			return
@@ -62,7 +76,7 @@ func (s *Storage) RecentTradesSaver() {
 
 	batch := &pgx.Batch{}
 
-	for tick := time.Tick(5 * time.Second); ; {
+	for tick := time.Tick(100 * time.Millisecond); ; {
 		select {
 		case <-s.ctx.Done():
 			return

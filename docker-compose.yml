@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+  migrations:
+    image: flyway/flyway
+    container_name: db_migrations
+    volumes:
+      - type: bind
+        source: ./migrations
+        target: /flyway/sql
+    command: -user=postgres -password=password -url=jdbc:postgresql://db:5432/postgres migrate
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16
+    container_name: db
+    restart: always
+    # set shared memory limit when using docker-compose
+    shm_size: 128mb
+    environment:
+      POSTGRES_PASSWORD: password
+    ports:
+      - 6432:5432
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 1s
+      timeout: 1s
+      retries: 15

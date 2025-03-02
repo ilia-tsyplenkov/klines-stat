@@ -20,6 +20,7 @@ type (
 		WSApiUrl   string            `yaml:"ws_api_url"`
 		Tickers    map[string]string `yaml:"tickers"`
 		Timeframes map[string]int64  `yaml:"timeframes"`
+		Category   string            `yaml:"category"`
 	}
 )
 

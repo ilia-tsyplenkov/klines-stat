@@ -8,7 +8,9 @@ import (
 	"syscall"
 
 	"github.com/ilia-tsyplenkov/klines-stat/config"
+	builder "github.com/ilia-tsyplenkov/klines-stat/internal/builder/bybit"
 	"github.com/ilia-tsyplenkov/klines-stat/internal/models"
+	"github.com/ilia-tsyplenkov/klines-stat/internal/puller/bybit/rest"
 	"github.com/ilia-tsyplenkov/klines-stat/internal/puller/bybit/ws"
 	"github.com/ilia-tsyplenkov/klines-stat/internal/storage/pg"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -56,7 +58,15 @@ func main() {
 	klineStorageCh := make(chan *models.Kline, 100)
 	rtStorageCh := make(chan *models.RecentTrade, 100)
 
-	klineBuilderQueries := make(map[string][]chan *models.RecentTrade)
+	klineBuilderQueries := make(map[string]map[string]chan *models.RecentTrade)
+	for pair := range cfg.Exchange["bybit"].Tickers {
+		channels := make(map[string]chan *models.RecentTrade)
+		for timeframe := range cfg.Exchange["bybit"].Timeframes {
+			ch := make(chan *models.RecentTrade, 100)
+			channels[timeframe] = ch
+		}
+		klineBuilderQueries[pair] = channels
+	}
 
 	storage := pg.New(
 		ctx,
@@ -79,9 +89,11 @@ func main() {
 		storage.RecentTradesSaver()
 	}()
 
+	bybitCfg := cfg.Exchange["bybit"]
+
 	rtPuller, err := ws.New(
 		ctx,
-		cfg.Exchange["bybit"],
+		bybitCfg,
 		klineBuilderQueries,
 		rtStorageCh,
 	)
@@ -90,24 +102,30 @@ func main() {
 	}
 	go rtPuller.Start()
 
-	// for pair := range cfg.Exchange["bybit"].Tickers {
-	// 	for tf := range cfg.Exchange["bybit"].Timeframes {
-	// 		puller := rest.New(
-	// 			ctx,
-	// 			klineStorageCh,
-	// 			cfg.Exchange["bybit"],
-	// 			pair,
-	// 			tf,
-	// 			1738368000000,
-	// 		)
-	// 		wg.Add(1)
-	// 		go func(puller *rest.KLinePuller) {
-	// 			defer wg.Done()
-	// 			puller.Pull()
-	// 		}(puller)
+	for pair := range bybitCfg.Tickers {
+		for tf := range bybitCfg.Timeframes {
+			puller := rest.New(
+				ctx,
+				klineStorageCh,
+				cfg.Exchange["bybit"],
+				pair,
+				tf,
+				1740931766425,
+				// 1738368000000,
+			)
+			wg.Add(1)
+			go func(puller *rest.KLinePuller) {
+				defer wg.Done()
+				kline, err := puller.Pull()
+				if err != nil {
+					log.Errorf("rest puller failed: pair: %s tf: %s: %v", pair, tf, err)
+				}
 
-	// 	}
-	// }
+				builder.New(ctx, bybitCfg, kline, klineBuilderQueries[pair][tf], klineStorageCh).Start()
+			}(puller)
+
+		}
+	}
 	wg.Wait()
 	// fmt.Println("all done")
 	// cancel()

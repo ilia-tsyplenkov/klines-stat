@@ -51,7 +51,7 @@ func (s *Storage) KLinesSaver() {
 			if err != nil {
 				log.Errorf("writing batch: %v", err)
 			} else {
-				log.Infof("saving klines: %d", batch.Len())
+				// log.Infof("saving klines: %d", batch.Len())
 			}
 			br.Close()
 			batch = &pgx.Batch{}
@@ -90,7 +90,7 @@ func (s *Storage) RecentTradesSaver() {
 			if err != nil {
 				log.Errorf("writing batch: %v", err)
 			} else {
-				log.Infof("saving rt: %d", batch.Len())
+				// log.Infof("saving rt: %d", batch.Len())
 			}
 			br.Close()
 			batch = &pgx.Batch{}

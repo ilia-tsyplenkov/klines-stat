@@ -17,7 +17,7 @@ type RecentTradePuller struct {
 	exchangeCfg  config.Exchange
 	requestURL   string
 	ws           *bybitWS.WebSocket
-	pairQueries  map[string][]chan *models.RecentTrade
+	pairQueries  map[string]map[string]chan *models.RecentTrade
 	msgQuery     chan string
 	storageQuery chan *models.RecentTrade
 }
@@ -25,7 +25,7 @@ type RecentTradePuller struct {
 func New(
 	ctx context.Context,
 	exchangeCfg config.Exchange,
-	pairQueries map[string][]chan *models.RecentTrade,
+	pairQueries map[string]map[string]chan *models.RecentTrade,
 	storageQuery chan *models.RecentTrade,
 
 ) (*RecentTradePuller, error) {
@@ -51,7 +51,7 @@ func (p *RecentTradePuller) Start() {
 	defer p.ws.Disconnect()
 	l := log.WithField("action", "ws puller start")
 
-	for _, pair := range p.exchangeCfg.Tickers {
+	for pair := range p.exchangeCfg.Tickers {
 		if _, err := p.ws.SendSubscription([]string{fmt.Sprintf("publicTrade.%s", pair)}); err != nil {
 			l.Errorf("failed to subscribe to %q", pair)
 		}
@@ -72,8 +72,6 @@ func (p *RecentTradePuller) handler() {
 			if err != nil {
 				log.Errorf("rt msg handler: msg: %q: %+v", msg, err)
 			}
-
-			log.Infof("rt msg: %+v", *rt)
 
 			for _, rt := range rt.Data {
 				// send to each candle builder

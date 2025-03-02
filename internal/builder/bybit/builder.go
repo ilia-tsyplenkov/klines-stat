@@ -7,6 +7,7 @@ import (
 
 	"github.com/ilia-tsyplenkov/klines-stat/config"
 	"github.com/ilia-tsyplenkov/klines-stat/internal/models"
+	log "github.com/sirupsen/logrus"
 )
 
 const gap float64 = 0.0000000000001
@@ -40,12 +41,15 @@ func New(
 
 func (b *KlineBuilder) Start() {
 
-	tick := time.After(time.Duration(b.kline.UtcBegin+b.timeframe-time.Now().UTC().Unix()) * time.Millisecond)
+	l := log.WithField("action", "builder")
+	ticker := time.NewTicker(time.Duration(b.kline.UtcBegin+b.timeframe-time.Now().UTC().Unix()) * time.Millisecond)
+	defer ticker.Stop()
 	for {
 		select {
 		case <-b.ctx.Done():
 			return
-		case <-tick:
+		case <-ticker.C:
+			l.Info("tick")
 			b.storageCh <- b.kline
 			b.kline = &models.Kline{
 				Pair:      b.kline.Pair,
@@ -53,24 +57,32 @@ func (b *KlineBuilder) Start() {
 				UtcBegin:  b.kline.UtcEnd,
 				UtcEnd:    b.kline.UtcEnd + b.timeframe,
 			}
-			tick = time.After(time.Duration(b.timeframe) * time.Millisecond)
-		case rt := <-b.rtCh:
-			if b.kline.UtcBegin < rt.Timestamp || b.kline.UtcEnd <= rt.Timestamp {
-				continue
-			}
-			price, _ := strconv.ParseFloat(rt.Price, 64)
-			b.kline.C = price
+			ticker.Reset(time.Duration(b.timeframe) * time.Millisecond)
+		default:
+		fillKlineLoop:
+			for {
+				select {
+				default:
+					break fillKlineLoop
+				case rt := <-b.rtCh:
+					if b.kline.UtcBegin < rt.Timestamp || b.kline.UtcEnd <= rt.Timestamp {
+						continue
+					}
+					price, _ := strconv.ParseFloat(rt.Price, 64)
+					b.kline.C = price
 
-			if b.kline.O == 0.0 {
-				b.kline.O = price
-			}
-			if b.kline.L > price {
-				b.kline.L = price
-			}
-			if b.kline.H < price {
-				b.kline.H = price
+					if b.kline.O == 0.0 {
+						b.kline.O = price
+					}
+					if b.kline.L > price {
+						b.kline.L = price
+					}
+					if b.kline.H < price {
+						b.kline.H = price
+					}
+
+				}
 			}
 		}
 	}
-
 }

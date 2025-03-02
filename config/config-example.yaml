@@ -5,11 +5,6 @@ exchanges:
     ws_api_url: 'wss://stream.bybit.com/v5/public/spot'
     category: 'spot'
     tickers:
-      BTC_USDT: 'BTCUSDT'
-      ETH_USDT: 'ETHUSDT'
-      BCH_USDT: 'BCHUSDT'
+      BTCUSDT: 'BTC_USDT'
     timeframes:
       1: 60000
-      15: 900000
-      60: 3600000
-      D: 86400000

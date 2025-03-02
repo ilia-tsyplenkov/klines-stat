@@ -31,9 +31,9 @@ func New(
 	startTs int64,
 ) *KLinePuller {
 
-	bbPair := exchageCfg.Tickers[pair]
-	requestUrl := fmt.Sprintf("%s?category=%s&symbol=%s&interval=%s", exchageCfg.RestApiURL, exchageCfg.Category, bbPair, timeframe)
-	log.Infof("kline puller new[%s](%s): timeframe: %s: requestUrl: %q", bbPair, pair, timeframe, requestUrl)
+	bitsgapPair := exchageCfg.Tickers[pair]
+	requestUrl := fmt.Sprintf("%s?category=%s&symbol=%s&interval=%s&limit=1000", exchageCfg.RestApiURL, exchageCfg.Category, pair, timeframe)
+	log.Infof("kline puller new[%s](%s): timeframe: %s: requestUrl: %q", pair, bitsgapPair, timeframe, requestUrl)
 
 	return &KLinePuller{
 		ctx:          ctx,

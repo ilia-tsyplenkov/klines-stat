@@ -42,7 +42,10 @@ func New(
 func (b *KlineBuilder) Start() {
 
 	l := log.WithField("action", "builder")
-	ticker := time.NewTicker(time.Duration(b.kline.UtcBegin+b.timeframe-time.Now().UTC().Unix()) * time.Millisecond)
+	l.Infof("start: pair: %s, tf: %s tf[ms]: %d", b.kline.Pair, b.kline.TimeFrame, b.timeframe)
+	nextTick := b.kline.UtcBegin + b.timeframe - time.Now().UTC().Unix()*1000
+	l.Infof("set tick after %d ms", nextTick)
+	ticker := time.NewTicker(time.Duration(nextTick) * time.Millisecond)
 	defer ticker.Stop()
 	for {
 		select {
@@ -65,14 +68,20 @@ func (b *KlineBuilder) Start() {
 				default:
 					break fillKlineLoop
 				case rt := <-b.rtCh:
-					if b.kline.UtcBegin < rt.Timestamp || b.kline.UtcEnd <= rt.Timestamp {
+					if b.kline.UtcBegin > rt.Timestamp || b.kline.UtcEnd < rt.Timestamp {
 						continue
 					}
-					price, _ := strconv.ParseFloat(rt.Price, 64)
+					price, err := strconv.ParseFloat(rt.Price, 64)
+
+					if err != nil {
+						l.Error(err)
+					}
 					b.kline.C = price
 
 					if b.kline.O == 0.0 {
 						b.kline.O = price
+						b.kline.L = price
+						b.kline.H = price
 					}
 					if b.kline.L > price {
 						b.kline.L = price

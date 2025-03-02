@@ -21,6 +21,7 @@ type (
 		Tickers    map[string]string `yaml:"tickers"`
 		Timeframes map[string]int64  `yaml:"timeframes"`
 		Category   string            `yaml:"category"`
+		StartSince int64             `yaml:"startSince"`
 	}
 )
 

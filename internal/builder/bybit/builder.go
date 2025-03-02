@@ -41,11 +41,17 @@ func New(
 
 func (b *KlineBuilder) Start() {
 
-	l := log.WithField("action", "builder")
-	l.Infof("start: pair: %s, tf: %s tf[ms]: %d", b.kline.Pair, b.kline.TimeFrame, b.timeframe)
+	l := log.WithFields(log.Fields{
+		"action":    "builder",
+		"pair":      b.kline.Pair,
+		"timeframe": b.kline.TimeFrame,
+	})
+
+	l.Info("start")
+
 	nextTick := b.kline.UtcBegin + b.timeframe - time.Now().UTC().Unix()*1000
-	l.Infof("set tick after %d ms", nextTick)
 	ticker := time.NewTicker(time.Duration(nextTick) * time.Millisecond)
+
 	defer ticker.Stop()
 	for {
 		select {

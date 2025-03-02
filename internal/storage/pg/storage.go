@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/ilia-tsyplenkov/klines-stat/config"
 	"github.com/ilia-tsyplenkov/klines-stat/internal/models"
 	queries "github.com/ilia-tsyplenkov/klines-stat/internal/storage/queries/pg"
 	"github.com/jackc/pgx/v5"
@@ -13,6 +14,7 @@ import (
 
 type Storage struct {
 	ctx        context.Context
+	cfg        config.Exchange
 	conn       *pgxpool.Pool
 	klineQuery chan *models.Kline
 	rtQuery    chan *models.RecentTrade
@@ -21,12 +23,14 @@ type Storage struct {
 func New(
 	ctx context.Context,
 	conn *pgxpool.Pool,
+	cfg config.Exchange,
 	klineCh chan *models.Kline,
 	rtCh chan *models.RecentTrade,
 ) *Storage {
 	return &Storage{
 		ctx:        ctx,
 		conn:       conn,
+		cfg:        cfg,
 		klineQuery: klineCh,
 		rtQuery:    rtCh,
 	}
@@ -59,7 +63,7 @@ func (s *Storage) KLinesSaver() {
 			// put to the batch
 			batch.Queue(
 				queries.InsertKLineQuery,
-				kl.Pair,
+				s.cfg.Tickers[kl.Pair],
 				kl.TimeFrame,
 				kl.O,
 				kl.H,
@@ -107,7 +111,7 @@ func (s *Storage) RecentTradesSaver() {
 					batch.Queue(
 						queries.InsertRecentTradeQuery,
 						rt.Tid,
-						rt.Pair,
+						s.cfg.Tickers[rt.Pair],
 						rt.Price,
 						rt.Amount,
 						rt.Side,

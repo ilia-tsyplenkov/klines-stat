@@ -68,9 +68,12 @@ func main() {
 		klineBuilderQueries[pair] = channels
 	}
 
+	bybitCfg := cfg.Exchange["bybit"]
+
 	storage := pg.New(
 		ctx,
 		conn,
+		bybitCfg,
 		klineStorageCh,
 		rtStorageCh,
 	)
@@ -88,8 +91,6 @@ func main() {
 		defer wg.Done()
 		storage.RecentTradesSaver()
 	}()
-
-	bybitCfg := cfg.Exchange["bybit"]
 
 	rtPuller, err := ws.New(
 		ctx,
@@ -111,7 +112,7 @@ func main() {
 				pair,
 				tf,
 				1740931766425,
-				// 1738368000000,
+				// bybitCfg.StartSince,
 			)
 			wg.Add(1)
 			go func(puller *rest.KLinePuller) {

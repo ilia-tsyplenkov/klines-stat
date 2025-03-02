@@ -72,19 +72,25 @@ func main() {
 	}()
 
 	for pair := range cfg.Exchange["bybit"].Tickers {
-		puller := rest.New(
-			ctx,
-			klineStorageCh,
-			cfg.Exchange["bybit"],
-			pair,
-			"D",
-			1738368000000,
-		)
-		wg.Add(1)
-		go func(puller *rest.KLinePuller) {
-			defer wg.Done()
-			puller.Pull()
-		}(puller)
+		for tf := range cfg.Exchange["bybit"].Timeframes {
+			puller := rest.New(
+				ctx,
+				klineStorageCh,
+				cfg.Exchange["bybit"],
+				pair,
+				tf,
+				1738368000000,
+			)
+			wg.Add(1)
+			go func(puller *rest.KLinePuller) {
+				defer wg.Done()
+				puller.Pull()
+			}(puller)
+
+		}
 	}
 	wg.Wait()
+	// fmt.Println("all done")
+	// cancel()
+	// time.Sleep(1 * time.Second)
 }

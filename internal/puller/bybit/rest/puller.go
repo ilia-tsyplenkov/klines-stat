@@ -49,11 +49,12 @@ func (p *KLinePuller) Pull() (*models.Kline, error) {
 	var kline *models.Kline
 	for i := 1; ; i++ {
 		klineURL := fmt.Sprintf("%s&start=%d", p.requestURL, p.startTs)
+		// log.Infof("klineURL: %s", klineURL)
 		klinesResp, err := p.getKLines(klineURL)
 		if err != nil {
 			panic(err)
 		}
-		log.Infof("%d:[%d](%s) %v\n", i, len(klinesResp.Result.List), p.timeframe, klinesResp.Result.List)
+		log.Infof("%d:%s[%d](%s)\n", i, klinesResp.Result.Symbol, len(klinesResp.Result.List), p.timeframe)
 
 		for i := len(klinesResp.Result.List) - 1; i >= 0; i-- {
 			kl := klinesResp.Result.List[i]
@@ -78,6 +79,7 @@ func (p *KLinePuller) Pull() (*models.Kline, error) {
 		if !klinesResp.IsLast {
 			p.startTs = klinesResp.NextTS
 		} else {
+			// log.Info("is last record")
 			break
 		}
 	}
@@ -85,7 +87,7 @@ func (p *KLinePuller) Pull() (*models.Kline, error) {
 }
 
 func (p *KLinePuller) getKLines(url string) (*bybit.KLineResponse, error) {
-	resp, err := http.Get(p.requestURL)
+	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +100,9 @@ func (p *KLinePuller) getKLines(url string) (*bybit.KLineResponse, error) {
 
 	ts, _ := strconv.Atoi(klines.Result.List[0][0])
 
+	// log.Infof("ts: %d tf: %d klines.Time: %d\n", ts, p.exchageCfg.Timeframes[p.timeframe], klines.Time)
 	klines.IsLast = int64(ts)+p.exchageCfg.Timeframes[p.timeframe] > klines.Time
+
 	klines.NextTS = int64(ts) + p.exchageCfg.Timeframes[p.timeframe]
 
 	return klines, nil

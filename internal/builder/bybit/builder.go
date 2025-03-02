@@ -47,7 +47,7 @@ func (b *KlineBuilder) Start() {
 		"timeframe": b.kline.TimeFrame,
 	})
 
-	l.Info("start")
+	l.Infof("start with kline: %+v", *b.kline)
 
 	nextTick := b.kline.UtcBegin + b.timeframe - time.Now().UTC().Unix()*1000
 	ticker := time.NewTicker(time.Duration(nextTick) * time.Millisecond)
@@ -59,13 +59,17 @@ func (b *KlineBuilder) Start() {
 			return
 		case <-ticker.C:
 			l.Info("tick")
+
+			l.Infof("sent to storage: %+v", b.kline)
 			b.storageCh <- b.kline
+
 			b.kline = &models.Kline{
 				Pair:      b.kline.Pair,
 				TimeFrame: b.kline.TimeFrame,
 				UtcBegin:  b.kline.UtcEnd,
 				UtcEnd:    b.kline.UtcEnd + b.timeframe,
 			}
+
 			ticker.Reset(time.Duration(b.timeframe) * time.Millisecond)
 		default:
 		fillKlineLoop:
@@ -78,6 +82,7 @@ func (b *KlineBuilder) Start() {
 						continue
 					}
 					price, err := strconv.ParseFloat(rt.Price, 64)
+					// l.Infof("price: %f", price)
 
 					if err != nil {
 						l.Error(err)

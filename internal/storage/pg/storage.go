@@ -39,6 +39,7 @@ func New(
 func (s *Storage) KLinesSaver() {
 
 	batch := &pgx.Batch{}
+	l := log.WithField("action", "kline saver")
 
 	for tick := time.Tick(100 * time.Millisecond); ; {
 		select {
@@ -53,14 +54,18 @@ func (s *Storage) KLinesSaver() {
 			br := s.conn.SendBatch(s.ctx, batch)
 			_, err := br.Exec()
 			if err != nil {
-				log.Errorf("writing batch: %v", err)
+				l.Errorf("writing batch: %v", err)
 			} else {
-				// log.Infof("saving klines: %d", batch.Len())
+				l.Infof("saving klines: %d", batch.Len())
 			}
+
 			br.Close()
+
 			batch = &pgx.Batch{}
 		case kl := <-s.klineQuery:
 			// put to the batch
+			l.Infof("add to batch: %+v", *kl)
+
 			batch.Queue(
 				queries.InsertKLineQuery,
 				s.cfg.Tickers[kl.Pair],

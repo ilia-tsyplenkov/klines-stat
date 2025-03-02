@@ -8,7 +8,7 @@ exchanges:
       ETH_USDT: 'ETHUSDT'
       BCH_USDT: 'BCHUSDT'
     timeframes:
-      1m: 60000
-      15m: 900000
-      1h: 3600000
-      1d: 86400000
+      1: 60000
+      15: 900000
+      60: 3600000
+      D: 86400000

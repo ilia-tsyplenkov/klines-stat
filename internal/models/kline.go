@@ -10,5 +10,5 @@ type Kline struct {
 	C         float64 // close - цена закрытия
 	UtcBegin  int64   // время unix начала формирования свечки
 	UtcEnd    int64   // время unix окончания формирования свечки
-	// VolumeBS  VBS
+	VolumeBS  VBS
 }

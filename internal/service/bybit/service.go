@@ -1,6 +1,11 @@
-package service
+package bybit
+
+import (
+	st "github.com/ilia-tsyplenkov/klines-stat/internal/storage"
+)
 
 type Service struct {
+	storage st.Storager
 }
 
 func New() *Service {

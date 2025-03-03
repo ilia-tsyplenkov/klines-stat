@@ -73,6 +73,10 @@ func (p *KLinePuller) Pull() (*models.Kline, error) {
 				UtcEnd:    utcBegin + p.exchageCfg.Timeframes[p.timeframe],
 			}
 
+			// do not save uncompleted candle
+			if klinesResp.IsLast && i == 0 {
+				break
+			}
 			p.storageQueue <- kline
 		}
 		if !klinesResp.IsLast {
@@ -102,10 +106,4 @@ func (p *KLinePuller) getKLines(url string) (*bybit.KLineResponse, error) {
 	klines.NextTS = int64(ts) + p.exchageCfg.Timeframes[p.timeframe]
 
 	return klines, nil
-}
-
-func (p *KLinePuller) StartKLineBuilder(last *models.Kline) error {
-
-	return nil
-
 }

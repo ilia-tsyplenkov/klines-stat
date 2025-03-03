@@ -59,8 +59,6 @@ func (b *KlineBuilder) Start() {
 			return
 		case <-ticker.C:
 			l.Info("tick")
-
-			l.Infof("sent to storage: %+v", b.kline)
 			b.storageCh <- b.kline
 
 			b.kline = &models.Kline{
@@ -82,7 +80,6 @@ func (b *KlineBuilder) Start() {
 						continue
 					}
 					price, err := strconv.ParseFloat(rt.Price, 64)
-					// l.Infof("price: %f", price)
 
 					if err != nil {
 						l.Error(err)

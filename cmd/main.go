@@ -111,8 +111,7 @@ func main() {
 				cfg.Exchange["bybit"],
 				pair,
 				tf,
-				1740931766425,
-				// bybitCfg.StartSince,
+				bybitCfg.StartSince,
 			)
 			wg.Add(1)
 			go func(puller *rest.KLinePuller) {

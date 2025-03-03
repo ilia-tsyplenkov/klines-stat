@@ -45,6 +45,9 @@ func New(
 	}
 }
 
+// Gets historical klines via rest,
+// parses the response and sends completed klines to the saver worker
+// via storageQueue channel. Returns the last uncompleted kline.
 func (p *KLinePuller) Pull() (*models.Kline, error) {
 	l := log.WithField("action", "kline rest puller")
 	var kline *models.Kline

@@ -45,6 +45,9 @@ func New(
 	return puller, nil
 }
 
+// Creates web socket connection,
+// subscribes to all topics in the config and
+// launches internal handler of ws data
 func (p *RecentTradePuller) Start() {
 	go p.handler()
 	p.ws.Connect()
@@ -60,6 +63,10 @@ func (p *RecentTradePuller) Start() {
 	<-p.ctx.Done()
 }
 
+// Receives and pareses messages,
+// sends each message to the kline builders of this pair
+// E.g BTCUDSDT msg goes to 1m, 15m, 60m, 1d kline builders
+// plus sends it to the saver worker
 func (p *RecentTradePuller) handler() {
 
 	for {

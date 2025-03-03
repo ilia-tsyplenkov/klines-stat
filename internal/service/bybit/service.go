@@ -37,6 +37,7 @@ func New(
 	}
 }
 
+// start the service for the specified exchange
 func (s *Service) Start() error {
 
 	klineStorageCh := make(chan *models.Kline, 100)

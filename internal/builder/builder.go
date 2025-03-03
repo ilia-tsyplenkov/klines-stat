@@ -5,6 +5,7 @@ import (
 )
 
 type Builder interface {
+	// start kline builder
 	Start()
 }
 

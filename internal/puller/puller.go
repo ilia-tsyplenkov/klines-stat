@@ -7,10 +7,12 @@ import (
 )
 
 type RestPuller interface {
+	// pull of historical kline via rest
 	Pull() (*models.Kline, error)
 }
 
 type WsPuller interface {
+	// pull reset trade data via websocket
 	Start()
 }
 

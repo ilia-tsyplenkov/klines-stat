@@ -25,7 +25,6 @@ func New(
 	ctx context.Context,
 	cfg config.Exchange,
 	kline *models.Kline,
-	// timefrage int64,
 	rtCh chan *models.RecentTrade,
 	storageCh chan *models.Kline,
 ) *KlineBuilder {
@@ -39,6 +38,7 @@ func New(
 	}
 }
 
+// Builds kline for specific pair and timeframe
 func (b *KlineBuilder) Start() {
 
 	l := log.WithFields(log.Fields{

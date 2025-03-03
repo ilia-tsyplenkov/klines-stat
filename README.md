@@ -33,6 +33,7 @@ make db-connect
 
 ## Other commands description
 make help
+```
 
 
 ## NOTE

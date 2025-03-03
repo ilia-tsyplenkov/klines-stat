@@ -33,3 +33,9 @@ make db-connect
 
 ## Other commands description
 make help
+
+
+## NOTE
+
+Please keep in mind that import of `github.com/wuhewuhe/bybit.go.api v1.0.18` will be replaced by my fork of this repo.
+I found this solution very useful but there are several issues causes build and import error. My fork contains a quick fix.

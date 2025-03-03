@@ -7,6 +7,9 @@ compose-run: ###  run client and server in docker-compose
 compose-rebuild: ###  rebuild images and run docker-compose
 	docker-compose up --build
 
+compose-cleanup: ### remove docker-containers
+	docker-compose rm -f
+
 db-connect: ### connect to db in docker
 	psql "postgres://postgres:password@localhost:6432/postgres?sslmode=disable"
 

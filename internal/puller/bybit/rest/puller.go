@@ -46,6 +46,7 @@ func New(
 }
 
 func (p *KLinePuller) Pull() (*models.Kline, error) {
+	l := log.WithField("action", "kline rest puller")
 	var kline *models.Kline
 	for i := 1; ; i++ {
 		klineURL := fmt.Sprintf("%s&start=%d", p.requestURL, p.startTs)
@@ -53,7 +54,7 @@ func (p *KLinePuller) Pull() (*models.Kline, error) {
 		if err != nil {
 			panic(err)
 		}
-		log.Infof("%d: pair:%s tf:%s recods: %d", i, klinesResp.Result.Symbol, p.timeframe, len(klinesResp.Result.List))
+		l.Infof("%d: pair:%s tf:%s records: %d", i, klinesResp.Result.Symbol, p.timeframe, len(klinesResp.Result.List))
 
 		for i := len(klinesResp.Result.List) - 1; i >= 0; i-- {
 			kl := klinesResp.Result.List[i]
